@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import json
+import tempfile
 from functools import cached_property
 from pathlib import Path
-import tempfile
 
 import classyclick
 import requests
@@ -107,12 +107,11 @@ class Push:
                 for reference in obj.get('references', []):
                     if reference.get('type') == 'index-pattern':
                         reference['id'] = self.index
-        
+
         with tempfile.NamedTemporaryFile(suffix='.ndjson') as f:
             temp = Path(f.name)
             temp.write_text('\n'.join(json.dumps(obj) for obj in objs))
             r = self.osd_client.import_object(temp, overwrite=True)
-            print(r.content)
             r.raise_for_status()
 
     def __call__(self):
