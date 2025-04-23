@@ -99,10 +99,10 @@ class Push:
             r.raise_for_status()
         r = self.osd_client.create_index_pattern(self.index, 'transaction.date')
         r.raise_for_status()
+        r = self.osd_client.import_object(Path('dashboard.ndjson'), overwrite=True)
+        r.raise_for_status()
 
     def __call__(self):
-        r = self.osd_client.import_object(Path('dashboard.ndjson'), overwrite=True)
-        print(r.content)
         self.setup()
         self.push_to_os()
 

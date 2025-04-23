@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import sys
 from pathlib import Path
 
@@ -30,7 +31,11 @@ class DownloadDashboard:
     def __call__(self):
         r = self.osd_client.export_dashboard(self.dashboard_id)
         r.raise_for_status()
-        self.output.write_bytes(r.content)
+        # exclude index-pattern objects
+        objects = [json.loads(line) for line in r.content.splitlines()]
+        self.output.write_text(
+            '\n'.join(json.dumps(obj) for obj in objects if obj.get('type') not in {'index-pattern'})
+        )
         click.echo(f'Dashboard saved to {self.output}')
 
 
