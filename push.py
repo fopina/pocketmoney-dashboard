@@ -3,6 +3,7 @@
 import json
 from functools import cached_property
 from pathlib import Path
+import tempfile
 
 import classyclick
 import requests
@@ -18,6 +19,7 @@ class Push:
     os_port: int = classyclick.option(default=9200)
     osd_host: str = classyclick.option(default='localhost')
     osd_port: int = classyclick.option(default=5601)
+    dashboard: Path = classyclick.option(default='dashboard.ndjson', help='Path to the dashboard export')
 
     @cached_property
     def data(self):
@@ -99,8 +101,19 @@ class Push:
             r.raise_for_status()
         r = self.osd_client.create_index_pattern(self.index, 'transaction.date')
         r.raise_for_status()
-        r = self.osd_client.import_object(Path('dashboard.ndjson'), overwrite=True)
-        r.raise_for_status()
+        objs = [json.loads(line) for line in self.dashboard.read_text().splitlines()]
+        for obj in objs:
+            if obj.get('type') == 'visualization':
+                for reference in obj.get('references', []):
+                    if reference.get('type') == 'index-pattern':
+                        reference['id'] = self.index
+        
+        with tempfile.NamedTemporaryFile(suffix='.ndjson') as f:
+            temp = Path(f.name)
+            temp.write_text('\n'.join(json.dumps(obj) for obj in objs))
+            r = self.osd_client.import_object(temp, overwrite=True)
+            print(r.content)
+            r.raise_for_status()
 
     def __call__(self):
         self.setup()
