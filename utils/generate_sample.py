@@ -4,15 +4,10 @@ import json
 import sys
 from pathlib import Path
 
-import click
-
 sys.path.append(str(Path(__file__).parent.parent))
 
-from functools import cached_property
 
 import classyclick
-
-from push import OSDClient
 
 
 @classyclick.command()
