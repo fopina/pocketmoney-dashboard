@@ -6,9 +6,11 @@ from functools import cached_property
 from pathlib import Path
 
 import classyclick
+import click
 import requests
-from opensearchpy import OpenSearch
+from opensearchpy import NotFoundError, OpenSearch
 from opensearchpy.helpers import streaming_bulk
+from tqdm import tqdm
 
 
 @classyclick.command()
@@ -20,6 +22,7 @@ class Push:
     osd_host: str = classyclick.option(default='localhost')
     osd_port: int = classyclick.option(default=5601)
     dashboard: Path = classyclick.option(default='dashboard.ndjson', help='Path to the dashboard export')
+    reset: bool = classyclick.option(help='Reset the index and re-import the dashboard, even if they already exist')
 
     @cached_property
     def data(self):
@@ -91,11 +94,23 @@ class Push:
             raise_on_error=False,
         )
 
-        for success, failed in items:
+        for success, failed in tqdm(
+            items, total=len(self.data['ICTransactionSplit']['data']), desc='Pushing to OpenSearch'
+        ):
             if not success:
                 print('Errors:', json.dumps(failed, indent=2))
 
     def setup(self):
+        try:
+            self.client.indices.get(index=self.index)
+            # index exists, assume initial setup is not required unless --reset is used
+            if self.reset:
+                self.client.indices.delete(index=self.index)
+            else:
+                return
+        except NotFoundError:
+            """no index exists, assume initial setup is required, go ahead and setup everything"""
+        click.echo('Setting up the index, index pattern and dashboard...')
         r = self.osd_client.delete_index_pattern(self.index)
         if r.status_code != 404:
             r.raise_for_status()

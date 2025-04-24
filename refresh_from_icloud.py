@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-from pathlib import Path
 import tempfile
+import zipfile
+from pathlib import Path
 
 import classyclick
 import click
-import zipfile
+
 
 @classyclick.command()
 class RefreshFromiCloud:
@@ -26,16 +27,16 @@ class RefreshFromiCloud:
             zipf = zipfiles[int(click.prompt('> ', type=click.IntRange(0, len(zipfiles) - 1)))]
         else:
             zipf = zipfiles[0]
-        
+
         with zipfile.ZipFile(zipf) as zf:
             contents = zf.namelist()
             pmdb_files = [f for f in contents if f.endswith('.pmdb')]
-            
+
             if not pmdb_files:
                 raise click.ClickException('No .pmdb file found in the zip archive')
             if len(pmdb_files) > 1:
                 raise click.ClickException('Multiple .pmdb files found in the zip archive')
-                
+
             pmdb_file = pmdb_files[0]
             with tempfile.TemporaryDirectory() as temp_dir:
                 zf.extract(pmdb_file, temp_dir)

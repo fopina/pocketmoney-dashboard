@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 opensearch-py = "*"
 classyclick = "*"
+tqdm = "*"
 
 [dev-packages]
 ruff = "*"
