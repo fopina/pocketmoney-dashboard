@@ -1,1 +1,103 @@
-"asd"
+{
+    "ICCategory": {
+        "data": [
+            {
+                "ID": "FAKE_CAT_ID_0",
+                "parent": "-1774313309",
+                "index": 0,
+                "name": "Groceries",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_1",
+                "parent": "-1774313309",
+                "index": 1,
+                "name": "Dining",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_2",
+                "parent": "-1774313309",
+                "index": 2,
+                "name": "Entertainment",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_3",
+                "parent": "-1774313309",
+                "index": 3,
+                "name": "Shopping",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_4",
+                "parent": "-1774313309",
+                "index": 4,
+                "name": "Travel",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_5",
+                "parent": "-1774313309",
+                "index": 5,
+                "name": "Rent",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_6",
+                "parent": "-1774313309",
+                "index": 6,
+                "name": "Salary",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_7",
+                "parent": "-1774313309",
+                "index": 7,
+                "name": "Investments",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_8",
+                "parent": "-1774313309",
+                "index": 8,
+                "name": "Crypto",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_9",
+                "parent": "-1774313309",
+                "index": 9,
+                "name": "Gifts",
+                "expense": 1,
+                "income": 0
+            },
+            {
+                "ID": "FAKE_CAT_ID_10",
+                "parent": "-1774313309",
+                "index": 10,
+                "name": "Healthcare",
+                "expense": 1,
+                "income": 0
+            }
+        ]
+    },
+    "ICTransaction": {
+        "data": []
+    },
+    "ICTransactionSplit": {
+        "data": []
+    },
+    "ICAccount": {
+        "data": []
+    }
+}
