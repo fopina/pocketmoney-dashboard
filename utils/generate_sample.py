@@ -1,14 +1,154 @@
 #!/usr/bin/env python3
 
+import hashlib
 import json
 import random
 import sys
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from itertools import count
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 
 import classyclick
+
+
+@dataclass
+class Account:
+    name: str | None = None
+    index: int = field(default_factory=count().__next__)
+    currency: str = 'F5287B32-36C7-4DBF-947C-C06B3397B7E0'
+    include_in_total: int = 1
+    hidden: int = 0
+
+    @property
+    def class_name(self):
+        return 'ICAccount'
+
+    @property
+    def id(self):
+        return hashlib.md5(self.name.encode()).hexdigest().upper()
+
+    def to_dict(self):
+        return {
+            'ID': self.id,
+            'class': self.class_name,
+            'name': self.name,
+            'hidden': self.hidden,
+            'parent': '-1774313309',
+            'index': self.index,
+            'comment': '',
+            'currency': self.currency,
+            'includedInTotal': self.include_in_total,
+            'type': 'ICAccountType.CheckingAccount',
+        }
+
+
+@dataclass
+class Category:
+    name: str | None = None
+    index: int = field(default_factory=count().__next__)
+    monthly_frequency: int = field(default_factory=lambda: random.randint(10, 100))
+    tx_amount_range: tuple[float, float] = field(default_factory=lambda: (10, 100))
+    credit: bool = False
+
+    @property
+    def class_name(self):
+        return 'ICCategory'
+
+    @property
+    def id(self):
+        return hashlib.md5(self.name.encode()).hexdigest().upper()
+
+    def to_dict(self):
+        return {
+            'ID': self.id,
+            'parent': '-1774313309',
+            'index': self.index,
+            'name': self.name,
+            'expense': 1,
+            'income': 0,
+        }
+
+
+@dataclass
+class Transaction:
+    index: int = field(default_factory=count().__next__)
+    date: str | None = None
+    account: str | None = None
+    name: str | None = None
+
+    @property
+    def class_name(self):
+        return 'ICTransaction'
+
+    @property
+    def id(self):
+        return hashlib.md5(f'FAKE_TXS_{self.index}'.encode()).hexdigest().upper()
+
+    def to_dict(self):
+        return {
+            'ID': self.id,
+            'account': self.account,
+            'date': self.date,
+            'valueDate': None,
+            'index': self.index,
+            'name': self.name,
+            'comment': None,
+            'useSumOfSplits': 1,
+            'amount': None,
+            'amountWithoutTaxes': None,
+            'taxesRate': None,
+            'payee': None,
+            'type': None,
+            'number': None,
+            'highlightColor': None,
+            'latitude': None,
+            'longitude': None,
+            'investmentTransactionInfo': None,
+            'scheduledTransaction': None,
+            'occurrence': -1,
+            'status': 'ICTransactionStatus.CreatedStatus',
+            'budgetItemPeriod': None,
+            'statement': None,
+            'externalID': None,
+        }
+
+
+@dataclass
+class TransactionSplit:
+    index: int = field(default_factory=count().__next__)
+    transaction: str = None
+    amount: float = 0
+    category: str = None
+
+    @property
+    def class_name(self):
+        return 'ICTransactionSplit'
+
+    @property
+    def id(self):
+        return hashlib.md5(f'FAKE_TXS_ID_{self.index}'.encode()).hexdigest().upper()
+
+    def to_dict(self):
+        return {
+            'ID': self.id,
+            'transaction': self.transaction,
+            'index': self.index,
+            'amount': f'{self.amount:0.2f}',
+            'comment': '',
+            'project': '',
+            'category': self.category,
+            'linkedSplit': None,
+            'ignoredInBudgets': 0,
+            'invoice': None,
+            'ignoredInReports': 0,
+            'ignoredInAverageBalance': 0,
+            'refund': 0,
+            'usesAccountOwners': 1,
+        }
 
 
 @classyclick.command()
@@ -24,24 +164,25 @@ class GenerateSample:
     def __call__(self):
         # accounts and categories suggested by Cursor
         ACCOUNTS = [
-            'Bank of America Checking',
-            'Coinbase',
-            'Fidelity Investments',
-            'Chase Sapphire Credit Card',
-            'Bank of America Savings',
+            Account(name='Bank of America Checking'),
+            Account(name='Coinbase'),
+            Account(name='Fidelity Investments'),
+            Account(name='Chase Sapphire Credit Card'),
+            Account(name='Bank of America Savings'),
         ]
         CATEGORIES = [
-            'Groceries',
-            'Dining',
-            'Entertainment',
-            'Shopping',
-            'Travel',
-            'Rent',
-            'Salary',
-            'Investments',
-            'Crypto',
-            'Gifts',
-            'Healthcare',
+            Category(name='Groceries'),
+            Category(name='Dining'),
+            Category(name='Entertainment'),
+            Category(name='Shopping'),
+            Category(name='Travel', monthly_frequency=1, tx_amount_range=(100, 200)),
+            Category(name='Rent', monthly_frequency=1, tx_amount_range=(900, 1000)),
+            # wishful thinking...
+            Category(name='Salary', credit=True, monthly_frequency=1, tx_amount_range=(9000, 10000)),
+            Category(name='Investments', monthly_frequency=1, tx_amount_range=(1000, 2000)),
+            Category(name='Crypto', monthly_frequency=1, tx_amount_range=(1000, 2000)),
+            Category(name='Gifts', monthly_frequency=1, tx_amount_range=(10, 200)),
+            Category(name='Healthcare', monthly_frequency=1, tx_amount_range=(10, 200)),
         ]
 
         data = {
@@ -51,23 +192,25 @@ class GenerateSample:
             'ICAccount': {'data': []},
         }
 
-        for ind, cat in enumerate(CATEGORIES):
-            data['ICCategory']['data'].append(
-                {
-                    'ID': f'FAKE_CAT_ID_{ind}',
-                    'parent': '-1774313309',
-                    'index': ind,
-                    'name': cat,
-                    'expense': 1,
-                    'income': 0,
-                }
-            )
+        for obj in CATEGORIES:
+            data[obj.class_name]['data'].append(obj.to_dict())
+        for obj in ACCOUNTS:
+            data[obj.class_name]['data'].append(obj.to_dict())
+
+        start = datetime.now() - timedelta(weeks=52)
+        start = start.replace(day=1, month=1, hour=0, minute=0, second=0, microsecond=0)
+
         # generate random transactions
-        transactions = []
-        for _ in range(100):
+        for off in range(12):
+            date = start.replace(month=1 + off)
             account = random.choice(ACCOUNTS)
             category = random.choice(CATEGORIES)
             amount = random.uniform(1, 1000)
+            tx = Transaction(account=account.id, name='SpotifyAndre', date=date.strftime('%Y-%M-%d'))
+            data[tx.class_name]['data'].append(tx.to_dict())
+            data['ICTransactionSplit']['data'].append(
+                TransactionSplit(transaction=tx.id, amount=amount, category=category.id).to_dict()
+            )
         self.output.write_text(json.dumps(data, indent=4))
 
 
