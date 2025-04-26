@@ -1,2 +1,4 @@
 *.pmdb
 *.json
+__pycache__
+*.pyc
