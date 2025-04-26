@@ -53,6 +53,7 @@ class Category:
     monthly_frequency: int = field(default_factory=lambda: random.randint(10, 100))
     tx_amount_range: tuple[float, float] = field(default_factory=lambda: (10, 100))
     credit: bool = False
+    payees: list[str] = field(default_factory=lambda: ['New transaction'])
 
     @property
     def class_name(self):
@@ -177,8 +178,8 @@ class GenerateSample:
             Category(name='Shopping'),
             Category(name='Travel', monthly_frequency=1, tx_amount_range=(100, 200)),
             Category(name='Rent', monthly_frequency=1, tx_amount_range=(900, 1000)),
-            # wishful thinking...
-            Category(name='Salary', credit=True, monthly_frequency=1, tx_amount_range=(9000, 10000)),
+            # https://pt.wikipedia.org/wiki/Presidente_da_Rep%C3%BAblica_Portuguesa#Sal%C3%A1rio
+            Category(name='Salary', credit=True, monthly_frequency=1, tx_amount_range=(7300, 7600)),
             Category(name='Investments', monthly_frequency=1, tx_amount_range=(1000, 2000)),
             Category(name='Crypto', monthly_frequency=1, tx_amount_range=(1000, 2000)),
             Category(name='Gifts', monthly_frequency=1, tx_amount_range=(10, 200)),
@@ -203,14 +204,18 @@ class GenerateSample:
         # generate random transactions
         for off in range(12):
             date = start.replace(month=1 + off)
-            account = random.choice(ACCOUNTS)
-            category = random.choice(CATEGORIES)
-            amount = random.uniform(1, 1000)
-            tx = Transaction(account=account.id, name='SpotifyAndre', date=date.strftime('%Y-%M-%d'))
-            data[tx.class_name]['data'].append(tx.to_dict())
-            data['ICTransactionSplit']['data'].append(
-                TransactionSplit(transaction=tx.id, amount=amount, category=category.id).to_dict()
-            )
+            for category in CATEGORIES:
+                for txind in range(category.monthly_frequency):
+                    account = random.choice(ACCOUNTS)
+                    amount = random.uniform(*category.tx_amount_range)
+                    if not category.credit:
+                        amount = -amount
+                    tx = Transaction(
+                        account=account.id, name=random.choice(category.payees), date=date.strftime('%Y-%m-%d')
+                    )
+                    split = TransactionSplit(transaction=tx.id, amount=amount, category=category.id)
+                    data[tx.class_name]['data'].append(tx.to_dict())
+                    data[split.class_name]['data'].append(split.to_dict())
         self.output.write_text(json.dumps(data, indent=4))
 
 
