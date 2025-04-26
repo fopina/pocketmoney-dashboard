@@ -54,6 +54,7 @@ class Category:
     tx_amount_range: tuple[float, float] = field(default_factory=lambda: (10, 100))
     credit: bool = False
     payees: list[str] = field(default_factory=lambda: ['New transaction'])
+    always_on_account: Account | None = None
 
     @property
     def class_name(self):
@@ -179,7 +180,13 @@ class GenerateSample:
             Category(name='Travel', monthly_frequency=1, tx_amount_range=(100, 200)),
             Category(name='Rent', monthly_frequency=1, tx_amount_range=(900, 1000)),
             # https://pt.wikipedia.org/wiki/Presidente_da_Rep%C3%BAblica_Portuguesa#Sal%C3%A1rio
-            Category(name='Salary', credit=True, monthly_frequency=1, tx_amount_range=(7300, 7600)),
+            Category(
+                name='Salary',
+                credit=True,
+                monthly_frequency=1,
+                tx_amount_range=(7300, 7600),
+                always_on_account=ACCOUNTS[0],
+            ),
             Category(name='Investments', monthly_frequency=1, tx_amount_range=(1000, 2000)),
             Category(name='Crypto', monthly_frequency=1, tx_amount_range=(1000, 2000)),
             Category(name='Gifts', monthly_frequency=1, tx_amount_range=(10, 200)),
@@ -205,8 +212,12 @@ class GenerateSample:
         for off in range(12):
             date = start.replace(month=1 + off)
             for category in CATEGORIES:
-                for txind in range(category.monthly_frequency):
-                    account = random.choice(ACCOUNTS)
+                for _ in range(category.monthly_frequency):
+                    date = date.replace(day=random.randint(1, 28))
+                    if category.always_on_account:
+                        account = category.always_on_account
+                    else:
+                        account = random.choice(ACCOUNTS)
                     amount = random.uniform(*category.tx_amount_range)
                     if not category.credit:
                         amount = -amount
