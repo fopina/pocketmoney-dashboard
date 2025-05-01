@@ -19,4 +19,7 @@ Now choose your stack:
 > To use the demo JSON file:
 > * Jump straight into the stack (of your choice) README, no need for any of these steps
 > 
+> OpenSearch:
 > ![Demo dashboard - OpenSearch](samples/demo.png)
+> PostgreSQL + Grafana:
+> ![Demo dashboard - Grafana](samples/demo_pg.png)
