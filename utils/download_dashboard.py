@@ -11,7 +11,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 from functools import cached_property
 
 import classyclick
-
 from push import OSDClient
 
 

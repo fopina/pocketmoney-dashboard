@@ -1,5 +1,6 @@
 *.pmdb
 *.json
 !samples/*.json
+!*.sample.json
 __pycache__
 *.pyc

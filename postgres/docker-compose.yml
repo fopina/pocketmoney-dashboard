@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:14.1
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-dev}
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+      - ./init_grafana_db.sh:/docker-entrypoint-initdb.d/init_grafana_db.sh
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:9.3
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  grafana:
+    image: grafana/grafana-oss:11.6.1
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: postgres
+      GF_DATABASE_NAME: grafana
+      GF_DATABASE_USER: grafana
+      GF_DATABASE_PASSWORD: grafana
+    volumes:
+      - grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+
+volumes:
+  postgres:
+  pgadmin:
+  grafana:
